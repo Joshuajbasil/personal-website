@@ -121,13 +121,16 @@
         <div class="contact-grid">
           <div class="contact-intro">
             <h2 id="contact-title">Let’s <span>connect.</span></h2>
-            
+
             <div class="contact-methods">
               <a href="mailto:Joshuajbasil@gmail.com"><span class="contact-method-label">EMAIL</span><span class="contact-method-value">Joshuajbasil@gmail.com <span aria-hidden="true">↗</span></span></a>
               <a href="https://www.linkedin.com/in/joshuabasil/"><span class="contact-method-label">LINKEDIN</span><span class="contact-method-value">Joshua Basil <span aria-hidden="true">↗</span></span><span class="contact-method-url">linkedin.com/in/joshuabasil</span></a>
             </div>
           </div>
           <form id="contact-form" class="contact-form" action="https://formsubmit.co/Joshuajbasil@gmail.com" method="post" aria-label="Write Joshua a message" aria-describedby="contact-form-note">
+            <input type="hidden" name="_subject" value="Portfolio contact message">
+            <input type="hidden" name="_template" value="table">
+            <input type="hidden" name="_url" value="https://joshuajbasil.github.io/personal-website/">
             <div class="contact-form-row">
               <div class="contact-field"><label for="contact-name">Name</label><input id="contact-name" name="name" autocomplete="name" placeholder="Your name" maxlength="100" required></div>
               <div class="contact-field"><label for="contact-email">Email</label><input id="contact-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" maxlength="254" required></div>
@@ -135,7 +138,7 @@
             <div class="contact-field"><label for="contact-subject">Subject</label><input id="contact-subject" name="subject" placeholder="What would you like to discuss?" maxlength="160" required></div>
             <div class="contact-field"><label for="contact-message">Message</label><textarea id="contact-message" name="message" rows="6" placeholder="Tell me a little about it…" maxlength="3000" required></textarea></div>
             <button class="button primary" type="submit">Send message <span aria-hidden="true">↗</span></button>
-            <p id="contact-form-note" class="contact-form-note">Your message is delivered to my inbox through FormSubmit.</p>
+            <p id="contact-form-note" class="contact-form-note">Complete the verification on the next page to submit your message.</p>
             <p id="contact-status" class="contact-form-status" role="status"></p>
           </form>
         </div>

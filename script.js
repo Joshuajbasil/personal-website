@@ -165,61 +165,20 @@ document.addEventListener('visibilitychange', hideCursorGlow);
 mousePointer.addEventListener('change', hideCursorGlow);
 reducedMotion.addEventListener('change', hideCursorGlow);
 
-// Deliver contact messages through FormSubmit without opening an email app.
+// Use the service's normal POST flow so verification and activation can appear.
 const contactForm = document.querySelector('#contact-form');
-let contactSending = false;
-contactForm.addEventListener('submit', async event => {
-  event.preventDefault();
-  if (contactSending || !contactForm.reportValidity()) return;
+contactForm.addEventListener('submit', event => {
   const status = document.querySelector('#contact-status');
-  const fields = Object.fromEntries(new FormData(contactForm));
-  for (const field of ['name', 'email', 'subject', 'message']) {
-    fields[field] = fields[field].trim();
-    if (!fields[field]) {
-      status.textContent = 'Please complete every field before sending.';
-      contactForm.elements.namedItem(field).focus();
-      return;
-    }
+  for (const name of ['name', 'email', 'subject', 'message']) {
+    const input = contactForm.elements.namedItem(name);
+    input.value = input.value.trim();
   }
-  const button = contactForm.querySelector('button[type="submit"]');
-  const buttonContent = button.innerHTML;
-  contactSending = true;
-  button.disabled = true;
-  button.textContent = 'Sending…';
-  contactForm.setAttribute('aria-busy', 'true');
-  status.textContent = 'Sending your message…';
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), 20000);
-  try {
-    const response = await fetch('https://formsubmit.co/ajax/Joshuajbasil@gmail.com', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        ...fields,
-        _subject: `Portfolio: ${fields.subject}`,
-        _replyto: fields.email,
-        _template: 'table'
-      }),
-      signal: controller.signal
-    });
-    if (!response.ok) throw new Error('Email service request failed');
-    const result = await response.json();
-    if (result.success !== true && result.success !== 'true') throw new Error('Email service did not accept the message');
-    status.textContent = 'Thanks! Your message has been submitted.';
-    // Preserve anything the visitor edited while the request was in flight.
-    for (const name of ['name', 'email', 'subject', 'message']) {
-      const input = contactForm.elements.namedItem(name);
-      if (input.value.trim() === fields[name]) input.value = '';
-    }
-  } catch (error) {
-    status.textContent = error.name === 'AbortError'
-      ? 'The request timed out, so delivery could not be confirmed. Your message is still here. You can also email Joshuajbasil@gmail.com directly.'
-      : 'Your message could not be sent. Please try again, or email Joshuajbasil@gmail.com directly. Your message is still here.';
-  } finally {
-    window.clearTimeout(timeout);
-    contactSending = false;
-    button.disabled = false;
-    button.innerHTML = buttonContent;
-    contactForm.removeAttribute('aria-busy');
+  if (!contactForm.reportValidity()) {
+    event.preventDefault();
+    return;
   }
+  contactForm.elements.namedItem('_subject').value = `Portfolio: ${contactForm.elements.namedItem('subject').value}`;
+  status.textContent = 'Continuing to email verification…';
+  // Let the browser submit the form. Do not replace this with a cross-origin
+  // fetch: verification and activation are handled on FormSubmit's page.
 });
