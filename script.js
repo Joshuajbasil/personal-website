@@ -165,23 +165,62 @@ document.addEventListener('visibilitychange', hideCursorGlow);
 mousePointer.addEventListener('change', hideCursorGlow);
 reducedMotion.addEventListener('change', hideCursorGlow);
 
-// Use the service's normal POST flow so verification and activation can appear.
+// Keep confirmation navigation on this site instead of FormSubmit's return link.
 const contactForm = document.querySelector('#contact-form');
-contactForm.addEventListener('submit', event => {
+let contactSending = false;
+contactForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  if (contactSending || !contactForm.reportValidity()) return;
   const status = document.querySelector('#contact-status');
+  const fields = Object.fromEntries(new FormData(contactForm));
   for (const name of ['name', 'email', 'subject', 'message']) {
-    const input = contactForm.elements.namedItem(name);
-    input.value = input.value.trim();
+    fields[name] = fields[name].trim();
+    if (!fields[name]) {
+      status.textContent = 'Please complete every field before sending.';
+      contactForm.elements.namedItem(name).focus();
+      return;
+    }
   }
-  if (!contactForm.reportValidity()) {
-    event.preventDefault();
-    return;
+  fields._subject = `Portfolio: ${fields.subject}`;
+  fields._replyto = fields.email;
+  fields._url = 'https://joshuajbasil.github.io/personal-website/';
+  // AJAX returns a result; navigation is handled below after acceptance.
+  delete fields._next;
+  const button = contactForm.querySelector('button[type="submit"]');
+  const originalButton = button.innerHTML;
+  contactSending = true;
+  button.disabled = true;
+  button.textContent = 'Sending…';
+  contactForm.setAttribute('aria-busy', 'true');
+  status.textContent = 'Sending your message…';
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), 20000);
+  try {
+    const response = await fetch('https://formsubmit.co/ajax/Joshuajbasil@gmail.com', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(fields),
+      signal: controller.signal
+    });
+    if (!response.ok) throw new Error('The email service is temporarily unavailable. Please try again later.');
+    const result = await response.json();
+    if (result.success !== true && result.success !== 'true') {
+      throw new Error(typeof result.message === 'string' && result.message.trim()
+        ? result.message : 'The email service did not accept your message. Please try again.');
+    }
+    status.textContent = 'Message submitted. Opening your confirmation…';
+    window.location.assign(new URL('thanks.html', window.location.href).href);
+  } catch (error) {
+    const reason = error.name === 'AbortError'
+      ? 'Delivery could not be confirmed because the request timed out.'
+      : error instanceof TypeError ? 'The email service could not be reached. Check your connection.'
+      : error.message || 'Your message could not be submitted.';
+    status.textContent = `${reason} Your message is still here. You can also email Joshuajbasil@gmail.com directly.`;
+  } finally {
+    window.clearTimeout(timeout);
+    contactSending = false;
+    button.disabled = false;
+    button.innerHTML = originalButton;
+    contactForm.removeAttribute('aria-busy');
   }
-  contactForm.elements.namedItem('_subject').value = `Portfolio: ${contactForm.elements.namedItem('subject').value}`;
-  // Set explicit absolute URLs at submission time as well as in the HTML.
-  contactForm.elements.namedItem('_next').value = 'https://joshuajbasil.github.io/personal-website/thanks.html';
-  contactForm.elements.namedItem('_url').value = 'https://joshuajbasil.github.io/personal-website/';
-  status.textContent = 'Continuing to email verification…';
-  // Let the browser submit the form. Do not replace this with a cross-origin
-  // fetch: verification and activation are handled on FormSubmit's page.
 });
