@@ -178,6 +178,9 @@ contactForm.addEventListener('submit', event => {
     return;
   }
   contactForm.elements.namedItem('_subject').value = `Portfolio: ${contactForm.elements.namedItem('subject').value}`;
+  // Set explicit absolute URLs at submission time as well as in the HTML.
+  contactForm.elements.namedItem('_next').value = 'https://joshuajbasil.github.io/personal-website/thanks.html';
+  contactForm.elements.namedItem('_url').value = 'https://joshuajbasil.github.io/personal-website/';
   status.textContent = 'Continuing to email verification…';
   // Let the browser submit the form. Do not replace this with a cross-origin
   // fetch: verification and activation are handled on FormSubmit's page.
