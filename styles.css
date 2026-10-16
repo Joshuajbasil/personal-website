@@ -110,3 +110,10 @@
 }
 
 .contact-form button:disabled{opacity:.65;cursor:wait;transform:none}
+
+/* Actual AutoFlow screenshot and source link. */
+.project-screenshot{display:block;height:auto;background:#f4f6fb}
+.project-screenshot img{display:block;width:100%;height:auto}
+.project-screenshot:focus-visible{outline-offset:-4px}
+.project-repository{display:inline-block;color:var(--accent);margin-top:22px}
+.project-repository:hover{text-decoration:underline;text-underline-offset:4px}
